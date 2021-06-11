@@ -1,15 +1,13 @@
 #!/bin/bash
 # script for the RM extension install step
 
-LOGFILE="script.log"
-
 log_message()
 {
     message=$1
     now=$(date -u +"%F %T")
     text="$now $message"
     logFile="script.log"
-    touch "$LOGFILE"
+    touch "$logFile"
     echo "$text" | tee -a "$logFile"
 }
 
