@@ -1,7 +1,19 @@
 #!/bin/bash
 # script for the RM extension install step
 
-echo "version 7"
+LOGFILE="script.log"
+
+log_message()
+{
+    message=$1
+    now=$(date -u +"%F %T")
+    text="$now $message"
+    logFile="script.log"
+    touch "$LOGFILE"
+    echo "$text" | tee -a "$logFile"
+}
+
+echo "version 8"
 # We require 3 inputs: $1 is url, $2 is pool, $3 is PAT
 # 4th input is option $4 is either '--once' or null
 url=$1
@@ -9,32 +21,32 @@ pool=$2
 token=$3
 runArgs=$4
 
-echo "url is " $url
-echo "pool is " $pool
-echo "runArgs is " $runArgs
+log_message "Url is $url"
+log_message "Pool is $pool"
+log_message "RunArgs is $runArgs"
 
 # get the folder where the script is executing
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-echo "directory is " $dir
+log_message "Directory is $dir"
 
 # Check if the agent was previously configured.  If so then abort
 if (test -f "$dir/.agent"); then
-    echo "Agent was already configured. Doing nothing."
+    log_message "Agent was already configured. Doing nothing."
     exit
 fi
 
 # Create our user account if it does not exist already
 if id AzDevOps &>/dev/null; then
-    echo AzDevOps account already exists
+    log_message "AzDevOps account already exists"
 else
-    echo creating AzDevOps account
+    log_message "Creating AzDevOps account"
     sudo useradd -m AzDevOps
     sudo usermod -a -G docker AzDevOps
     sudo usermod -a -G adm AzDevOps
     sudo usermod -a -G sudo AzDevOps
 
-    echo "Giving AzDevOps user access to the '/home' directory"
+    log_message "Giving AzDevOps user access to the '/home' directory"
     sudo chmod -R +r /home
     setfacl -Rdm "u:AzDevOps:rwX" /home
     setfacl -Rb /home/AzDevOps
@@ -43,11 +55,15 @@ fi
 
 # unzip the agent files
 zipfile=$(find $dir/vsts-agent*.tar.gz)
-echo "zipfile is " $zipfile
+log_message "Zipfile is $zipfile"
 
 if !(test -f "$dir/bin/Agent.Listener"); then
-    echo "Unzipping agent"
-    tar -xvf  $zipfile -C $dir
+    log_message "Unzipping agent"
+    { ERROR=$(tar -xvf  $zipfile -C $dir 2>&1 >&3 3>&-); } 3>&1
+    if ($? -ne 0); then
+        log_message "$ERROR"
+        exit -100
+    fi
 fi
 
 rm $zipfile
@@ -58,16 +74,29 @@ sudo chmod -R 777 $dir
 sudo chown -R AzDevOps:AzDevOps $dir
 
 # install dependencies
-echo installing dependencies
-./bin/installdependencies.sh
+log_message "Installing dependencies"
+{ ERROR=$(./bin/installdependencies.sh 2>&1 >&3 3>&-); } 3>&1
+if ($? -ne 0); then
+    log_message "$ERROR"
+    exit -100
+fi
+
 
 # install AT to be used when we schedule the build agent to run below
 apt install at
 
 # configure the build agent
 # calling bash here so the quotation marks around $pool get respected
-echo configuring build agent
-sudo runuser AzDevOps -c "/bin/bash $dir/config.sh --unattended --url $url --pool \"$pool\" --auth pat --token $token --acceptTeeEula --replace"
+log_message "Configuring build agent"
+{ ERROR=$(sudo runuser AzDevOps -c "/bin/bash $dir/config.sh --unattended --url $url --pool \"$pool\" --auth pat --token $token --acceptTeeEula --replace" 2>&1 >&3 3>&-); } 3>&1
+if ($? -ne 0); then
+    log_message "$ERROR"
+    exit -100
+fi
 
 # schedule the agent to run immediately
-echo "sudo runuser AzDevOps -c \"/bin/bash $dir/run.sh $runArgs\"" | at now
+{ ERROR=$((echo "sudo runuser AzDevOps -c \"/bin/bash $dir/run.sh $runArgs\"" | at now) 2>&1 >&3 3>&-); } 3>&1
+if ($? -ne 0); then
+    log_message "$ERROR"
+    exit -100
+fi
