@@ -61,7 +61,7 @@ if !(test -f "$dir/bin/Agent.Listener"); then
     if ($? -ne 0); then
         log_message "Agent unzipping failed"
         log_message "$ERROR"
-        exit -100
+        exit 100
     fi
 fi
 
