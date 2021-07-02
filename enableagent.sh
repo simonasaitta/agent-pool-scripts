@@ -3,7 +3,8 @@
 
 log_message()
 {
-    sed -e "s/^/$(date) /" >> logfile
+    message=$1
+    echo "$message" | sed -e "s/^/$(date -u +'%F %T') /"
 }
 
 echo "version 8"
