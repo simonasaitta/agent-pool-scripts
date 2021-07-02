@@ -3,9 +3,7 @@
 
 log_message()
 {
-    message=$1
-    now=$(date -u +"%F %T")
-    echo "$now $message"
+    sed -e "s/^/$(date) /" >> logfile
 }
 
 echo "version 8"
@@ -54,10 +52,11 @@ log_message "Zipfile is $zipfile"
 
 if !(test -f "$dir/bin/Agent.Listener"); then
     log_message "Unzipping agent"
-    { ERROR=$(tar -xvf  $zipfile -C $dir 2>&1 >&3 3>&-); } 3>&1
-    if [ $? -ne 0 ]; then
+    OUTPUT=$(tar -xvf  $zipfile -C $dir 2>&1)
+    retValue=$?
+    log_message "$OUTPUT"
+    if [ $retValue -ne 0 ]; then
         log_message "Agent unzipping failed"
-        log_message "$ERROR"
         exit 100
     fi
 fi
@@ -71,10 +70,11 @@ sudo chown -R AzDevOps:AzDevOps $dir
 
 # install dependencies
 log_message "Installing dependencies"
-{ ERROR=$(./bin/installdependencies.sh 2>&1 >&3 3>&-); } 3>&1
-if [ $? -ne 0 ]; then
+OUTPUT=$(./bin/installdependencies.sh 2>&1)
+retValue=$?
+log_message "$OUTPUT"
+if [ $retValue -ne 0 ]; then
     log_message "Dependencies installation failed"
-    log_message "$ERROR"
     exit 100
 fi
 
@@ -85,17 +85,19 @@ apt install at
 # configure the build agent
 # calling bash here so the quotation marks around $pool get respected
 log_message "Configuring build agent"
-{ ERROR=$(sudo runuser AzDevOps -c "/bin/bash $dir/config.sh --unattended --url $url --pool \"$pool\" --auth pat --token $token --acceptTeeEula --replace" 2>&1 >&3 3>&-); } 3>&1
-if [ $? -ne 0 ]; then
+OUTPUT=$(sudo runuser AzDevOps -c "/bin/bash $dir/config.sh --unattended --url $url --pool \"$pool\" --auth pat --token $token --acceptTeeEula --replace" 2>&1)
+retValue=$?
+log_message "$OUTPUT"
+if [ $retValue -ne 0 ]; then
     log_message "Build agent configuration failed"
-    log_message "$ERROR"
     exit 100
 fi
 
 # schedule the agent to run immediately
-{ ERROR=$((echo "sudo runuser AzDevOps -c \"/bin/bash $dir/run.sh $runArgs\"" | at now) 2>&1 >&3 3>&-); } 3>&1
-if [ $? -ne 0 ]; then
+OUTPUT=$((echo "sudo runuser AzDevOps -c \"/bin/bash $dir/run.sh $runArgs\"" | at now) 2>&1)
+retValue=$?
+log_message "$OUTPUT"
+if [ $retValue -ne 0 ]; then
     log_message "Scheduling agent failed"
-    log_message "$ERROR"
     exit 100
 fi
