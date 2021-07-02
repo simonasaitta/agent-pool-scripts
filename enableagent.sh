@@ -7,10 +7,10 @@ log_message()
     now=$(date -u +"%F %T")
     text="$now $message"
     logFile="script.log"
-    touch "$logFile"
     echo "$text" | tee -a "$logFile"
 }
 
+touch "script.log"
 echo "version 8"
 # We require 3 inputs: $1 is url, $2 is pool, $3 is PAT
 # 4th input is option $4 is either '--once' or null
