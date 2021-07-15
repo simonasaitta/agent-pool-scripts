@@ -53,7 +53,7 @@ log_message "Zipfile is $zipfile"
 
 if !(test -f "$dir/bin/Agent.Listener"); then
     log_message "Unzipping agent"
-    OUTPUT=$(tar -xvf  $zipfile -C $dir 2>&1)
+    OUTPUT=$(tar -xvf  $zipfile -C $dir 2>&1 > /dev/null)
     retValue=$?
     log_message "$OUTPUT"
     if [ $retValue -ne 0 ]; then
