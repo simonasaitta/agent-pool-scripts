@@ -6,7 +6,7 @@ touch log.txt
 log_message()
 {
     message=$1
-    echo $(date -u +'%F %T') "$message" | tee -a log.txt 
+    echo $(date -u +'%F %T') "$message"
 }
 
 echo "version 8"
