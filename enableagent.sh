@@ -1,7 +1,7 @@
 #!/bin/bash
 # script for the RM extension install step
 
-source /etc/profile.d/test.sh
+source /etc/profile.d/variable.sh
 touch log.txt
 log_message()
 {
