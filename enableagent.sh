@@ -2,11 +2,11 @@
 # script for the RM extension install step
 
 source /etc/profile.d/test.sh
-
+touch log.txt
 log_message()
 {
     message=$1
-    echo $(date -u +'%F %T') "$message"
+    echo $(date -u +'%F %T') "$message" | tee -a log.txt 
 }
 
 echo "version 8"
