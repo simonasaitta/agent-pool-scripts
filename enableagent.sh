@@ -1,6 +1,8 @@
 #!/bin/bash
 # script for the RM extension install step
 
+source /etc/profile.d/variable.sh
+
 echo "version 7"
 # We require 3 inputs: $1 is url, $2 is pool, $3 is PAT
 # 4th input is option $4 is either '--once' or null
