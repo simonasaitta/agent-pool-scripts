@@ -1,6 +1,8 @@
 #!/bin/bash
 # script for the RM extension install step
 
+source /etc/profile.d/test.sh
+
 log_message()
 {
     message=$1
