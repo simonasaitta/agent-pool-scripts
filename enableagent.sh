@@ -1,7 +1,7 @@
 #!/bin/bash
 # script for the RM extension install step
 
-source /etc/profile.d/variable.sh
+source /etc/profile.d/agent_env_vars.sh
 
 log_message()
 {
