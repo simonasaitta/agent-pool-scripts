@@ -97,10 +97,5 @@ if [ $retValue -ne 0 ]; then
 fi
 
 # schedule the agent to run immediately
-OUTPUT=$(sudo -E nice -n 0 runuser AzDevOps -c "/bin/bash $dir/run.sh $runArgs" 2>&1 &)
-retValue=$?
-log_message "$OUTPUT"
-if [ $retValue -ne 0 ]; then
-    log_message "Scheduling agent failed"
-    exit 100
-fi
+sudo -E nice -n 0 runuser AzDevOps -c "/bin/bash /home/azureuser/run.sh $runArgs" > /dev/null 2>&1 &
+disown
