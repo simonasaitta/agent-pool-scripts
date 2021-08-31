@@ -97,7 +97,7 @@ if [ $retValue -ne 0 ]; then
 fi
 
 # schedule the agent to run immediately
-OUTPUT=$((echo "nice -n 0 sudo -E runuser AzDevOps -c \"/bin/bash $dir/run.sh $runArgs\"" | at now) 2>&1)
+OUTPUT=$(sudo -E nice -n 0 runuser AzDevOps -c "/bin/bash ../test/run.sh" 2>&1 &)
 retValue=$?
 log_message "$OUTPUT"
 if [ $retValue -ne 0 ]; then
