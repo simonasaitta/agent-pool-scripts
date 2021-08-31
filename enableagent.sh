@@ -1,6 +1,7 @@
 #!/bin/bash
 # script for the RM extension install step
 
+# load environment variables
 source /etc/profile.d/agent_env_vars.sh
 
 log_message()
@@ -9,7 +10,7 @@ log_message()
     echo $(date -u +'%F %T') "$message"
 }
 
-echo "version 8"
+echo "version 9"
 # We require 3 inputs: $1 is url, $2 is pool, $3 is PAT
 # 4th input is option $4 is either '--once' or null
 url=$1
@@ -97,5 +98,10 @@ if [ $retValue -ne 0 ]; then
 fi
 
 # schedule the agent to run immediately
-sudo -E nice -n 0 runuser AzDevOps -c "source /etc/profile.d/agent_env_vars.sh && /bin/bash $dir/run.sh $runArgs" > /dev/null 2>&1 &
-disown
+OUTPUT=$((echo "sudo -E runuser AzDevOps -c \"/bin/bash $dir/run.sh $runArgs\"" | at now) 2>&1)
+retValue=$?
+log_message "$OUTPUT"
+if [ $retValue -ne 0 ]; then
+    log_message "Scheduling agent failed"
+    exit 100
+fi
