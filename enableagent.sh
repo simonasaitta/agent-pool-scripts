@@ -88,7 +88,7 @@ apt install at
 # configure the build agent
 # calling bash here so the quotation marks around $pool get respected
 log_message "Configuring build agent"
-OUTPUT=$(nice -n 0 sudo -E runuser AzDevOps -c "/bin/bash $dir/config.sh --unattended --url $url --pool \"$pool\" --auth pat --token $token --acceptTeeEula --replace" 2>&1)
+OUTPUT=$(sudo -E runuser AzDevOps -c "/bin/bash $dir/config.sh --unattended --url $url --pool \"$pool\" --auth pat --token $token --acceptTeeEula --replace" 2>&1)
 retValue=$?
 log_message "$OUTPUT"
 if [ $retValue -ne 0 ]; then
@@ -97,7 +97,7 @@ if [ $retValue -ne 0 ]; then
 fi
 
 # schedule the agent to run immediately
-OUTPUT=$(sudo -E nice -n 0 runuser AzDevOps -c "/bin/bash ../test/run.sh" 2>&1 &)
+OUTPUT=$((echo "sudo -E runuser AzDevOps -c \"/bin/bash $dir/run.sh $runArgs\"" | at now) 2>&1)
 retValue=$?
 log_message "$OUTPUT"
 if [ $retValue -ne 0 ]; then
