@@ -97,5 +97,5 @@ if [ $retValue -ne 0 ]; then
 fi
 
 # schedule the agent to run immediately
-sudo -E nice -n 0 runuser AzDevOps -c "/bin/bash /home/azureuser/run.sh $runArgs" > /dev/null 2>&1 &
+sudo -E nice -n 0 runuser AzDevOps -c "source /etc/profile.d/agent_env_vars.sh && /bin/bash /home/azureuser/run.sh $runArgs" > /dev/null 2>&1 &
 disown
