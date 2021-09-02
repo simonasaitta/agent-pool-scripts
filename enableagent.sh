@@ -74,7 +74,7 @@ sudo chown -R AzDevOps:AzDevOps $dir
 
 # install dependencies
 log_message "Installing dependencies"
-OUTPUT=$(./bin/installdependencies.sh 2>&1 > /dev/null)
+OUTPUT=$(./bin/installdependencies.sh 2>&1)
 retValue=$?
 log_message "$OUTPUT"
 if [ $retValue -ne 0 ]; then
