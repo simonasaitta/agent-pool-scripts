@@ -1,9 +1,6 @@
 #!/bin/bash
 # script for the RM extension install step
 
-# load environment variables
-source /etc/profile.d/agent_env_vars.sh
-
 log_message()
 {
     message=$1
@@ -21,6 +18,11 @@ runArgs=$4
 log_message "Url is $url"
 log_message "Pool is $pool"
 log_message "RunArgs is $runArgs"
+
+# load environment variables if file is present
+if (test -f "/etc/profile.d/agent_env_vars.sh"); then
+    source /etc/profile.d/agent_env_vars.sh
+fi
 
 # get the folder where the script is executing
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
@@ -79,6 +81,7 @@ retValue=$?
 log_message "$OUTPUT"
 if [ $retValue -ne 0 ]; then
     log_message "Dependencies installation failed"
+    exit 100
 fi
 
 # install AT to be used when we schedule the build agent to run below
