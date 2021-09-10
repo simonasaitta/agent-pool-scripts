@@ -81,7 +81,6 @@ retValue=$?
 log_message "$OUTPUT"
 if [ $retValue -ne 0 ]; then
     log_message "Dependencies installation failed"
-    exit 100
 fi
 
 # install AT to be used when we schedule the build agent to run below
