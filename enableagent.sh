@@ -97,20 +97,28 @@ log_message "Configuring build agent"
 
 # extract proxy configuration if present
 extra=''
-if [ ! -z $http_url  ] || [ ! -z $https_url ]; then
+proxy_url_variable=''
+if [ ! -z $http_proxy  ]; then
+    proxy_url_variable=$http_proxy
+elif [ ! -z $https_proxy  ]; then
+    proxy_url_variable=$https_proxy
+fi
+
+if [ ! -z $proxy_url_variable  ]; then
+    log_message "Found a proxy configuration"
     # http://<username>:<password>@<proxy_url/_proxyip>:<port>
     ## TODO - check if both assigned or only one
     proxy_username=''
     proxy_password=''
     proxy_url=''
-    if [[ "$http_url" != *"@"* ]]; then
-        proxy_url="$http_url"
-        extra="--proxyurl $proxy_url"
+    if [[ "$proxy_url_variable" != *"@"* ]]; then
+        proxy_url="$proxy_url_variable"
+        extra="--proxyurl $proxy_url_variable"
         log_message "Found proxy url $proxy_url"
     else
-        proxy_url=$(echo "$http_url" | cut -d'/' -f 1 )"//"$(echo "$http_url" | cut -d'@' -f 2 )
-        proxy_username=$(echo "$http_url" | cut -d':' -f 2 | cut -d'/' -f 3)
-        proxy_password=$(echo "$http_url" | cut -d'@' -f 1 | cut -d':' -f 3)
+        proxy_url=$(echo "$proxy_url_variable" | cut -d'/' -f 1 )"//"$(echo "$proxy_url_variable" | cut -d'@' -f 2 )
+        proxy_username=$(echo "$proxy_url_variable" | cut -d':' -f 2 | cut -d'/' -f 3)
+        proxy_password=$(echo "$proxy_url_variable" | cut -d'@' -f 1 | cut -d':' -f 3)
         proxy_username=$(decode_string "$proxy_username")
         proxy_password=$(decode_string "$proxy_password")
         extra="--proxyurl $proxy_url --proxyusername $proxy_username --proxypassword $proxy_password"
