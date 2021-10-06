@@ -1,13 +1,25 @@
 #!/bin/bash
 # script for the RM extension install step
 
+
 log_message()
 {
     message=$1
-    echo $(date -u +'%F %T') "$message" | tee -a log.txt
+    echo $(date -u +'%F %T') "$message"
 }
 
-echo "version 9"
+decode_string() 
+{
+    echo "$1" | sed 's/+/ /g; s/%/\\x/g;' | xargs -0 printf '%b' # substitute + with space and % with \x
+}
+
+echo "version 11"
+
+# load environment variables if file is present
+if (test -f "/etc/profile.d/agent_env_vars.sh"); then
+    source /etc/profile.d/agent_env_vars.sh
+fi
+
 # We require 3 inputs: $1 is url, $2 is pool, $3 is PAT
 # 4th input is option $4 is either '--once' or null
 url=$1
@@ -18,11 +30,6 @@ runArgs=$4
 log_message "Url is $url"
 log_message "Pool is $pool"
 log_message "RunArgs is $runArgs"
-
-# load environment variables if file is present
-if (test -f "/etc/profile.d/agent_env_vars.sh"); then
-    source /etc/profile.d/agent_env_vars.sh
-fi
 
 # get the folder where the script is executing
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
@@ -76,20 +83,42 @@ sudo chown -R AzDevOps:AzDevOps $dir
 
 # install dependencies
 log_message "Installing dependencies"
-OUTPUT=$(./bin/installdependencies.sh 2>&1)
+OUTPUT=$(./bin/installdependencies.sh 2>&1 > /dev/null)
 retValue=$?
 log_message "$OUTPUT"
 if [ $retValue -ne 0 ]; then
     log_message "Dependencies installation failed"
 fi
 
-# install AT to be used when we schedule the build agent to run below
-apt install at
 
 # configure the build agent
 # calling bash here so the quotation marks around $pool get respected
 log_message "Configuring build agent"
-OUTPUT=$(sudo -E runuser AzDevOps -c "/bin/bash $dir/config.sh --unattended --url $url --pool \"$pool\" --auth pat --token $token --acceptTeeEula --replace" 2>&1)
+
+# extract proxy configuration if present
+extra=''
+if [ ! -z $http_url  ] || [ ! -z $https_url ]; then
+    # http://<username>:<password>@<proxy_url/_proxyip>:<port>
+    ## TODO - check if both assigned or only one
+    proxy_username=''
+    proxy_password=''
+    proxy_url=''
+    if [[ "$http_url" != *"@"* ]]; then
+        proxy_url="$http_url"
+        extra="--proxyurl $proxy_url"
+        log_message "Found proxy url $proxy_url"
+    else
+        proxy_url=$(echo "$http_url" | cut -d'/' -f 1 )"//"$(echo "$http_url" | cut -d'@' -f 2 )
+        proxy_username=$(echo "$http_url" | cut -d':' -f 2 | cut -d'/' -f 3)
+        proxy_password=$(echo "$http_url" | cut -d'@' -f 1 | cut -d':' -f 3)
+        proxy_username=$(decode_string "$proxy_username")
+        proxy_password=$(decode_string "$proxy_password")
+        extra="--proxyurl $proxy_url --proxyusername $proxy_username --proxypassword $proxy_password"
+        log_message "Found proxy url $proxy_url and authentication info"
+    fi
+fi
+
+OUTPUT=$(sudo -E runuser AzDevOps -c "/bin/bash $dir/config.sh --unattended --url $url --pool \"$pool\" --auth pat --token $token --acceptTeeEula --replace $extra" 2>&1)
 retValue=$?
 log_message "$OUTPUT"
 if [ $retValue -ne 0 ]; then
@@ -97,15 +126,7 @@ if [ $retValue -ne 0 ]; then
     exit 100
 fi
 
-# schedule the agent to run immediately
-OUTPUT=$((echo "sudo -E runuser AzDevOps -c \"/bin/bash $dir/run.sh $runArgs\"" | at now) 2>&1)
-retValue=$?
-log_message "$OUTPUT"
-if [ $retValue -ne 0 ]; then
-    log_message "Scheduling agent failed"
-    exit 100
-fi
-
-# log_message "Starting agent"
-# sudo -E nice -n 0 runuser AzDevOps -c "/bin/bash $dir/run.sh $runArgs" > /dev/null 2>&1 &
-# disown
+# run agent in the background and detach it from the terminal
+log_message "Starting agent"
+sudo -E nice -n 0 runuser AzDevOps -c "/bin/bash $dir/run.sh $runArgs" > /dev/null 2>&1 &
+disown
