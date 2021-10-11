@@ -1,7 +1,6 @@
 #!/bin/bash
 # script for the RM extension install step
 
-
 log_message()
 {
     message=$1
@@ -26,6 +25,8 @@ url=$1
 pool=$2
 token=$3
 runArgs=$4
+
+echo $http_proxy
 
 log_message "Url is $url"
 log_message "Pool is $pool"
