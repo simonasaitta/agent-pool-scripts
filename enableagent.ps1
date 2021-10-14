@@ -25,7 +25,7 @@ function Log-Message
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 $agentDir = $PSScriptRoot
 
-Log-Message "Installing extension v12"
+Log-Message "Installing extension v13"
 Log-Message ("URL: " + $url)
 Log-Message ("Pool: " + $pool) 
 Log-Message ("runArgs: " + $runArgs)
@@ -416,7 +416,50 @@ if ($runAsUser)
       Add-LocalGroupMember -Group "docker-users" -Member $username
    }
 
+   $http_proxy=[System.Environment]::GetEnvironmentVariable('http_proxy','machine')
+   $https_proxy=[System.Environment]::GetEnvironmentVariable('https_proxy','machine')
+
+   Write-Output $http_proxy
    $extra = ""
+   $proxy_url_variable = ""
+   if ($http_proxy)
+   {
+      $proxy_url_variable=$http_proxy
+   }
+   elseif ($https_proxy)
+   {
+      $proxy_url_variable=$https_proxy      
+   }
+
+   if ($proxy_url_variable)
+   {
+      Write-Output "Found a proxy configuration"
+      $proxy_username = ""
+      $proxy_password = ""
+      $proxy_url = ""
+
+      if ( $proxy_url_variable -NotMatch "@")
+      {
+         $proxy_url = $proxy_url_variable
+         $extra = "--proxyurl $proxy_url_variable"
+         Write-Output "Found proxy url $proxy_url"
+      }
+      else
+      {
+         $proxy_url = "$([regex]::match($proxy_url_variable, '.+\/\/').Groups[0].Value)$([regex]::match($proxy_url_variable, '@(.*)').Groups[1].Value)"
+         $proxy_username = [regex]::match($proxy_url_variable, ':\/\/([^:]+)\:').Groups[1].Value
+         $proxy_password = [regex]::match($proxy_url_variable, ':[^:]+:([^@]+)@').Groups[1].Value
+
+         $proxy_username = [System.Net.WebUtility]::UrlDecode($proxy_username)
+         $proxy_password = [System.Net.WebUtility]::UrlDecode($proxy_password)
+         $extra = "--proxyurl $proxy_url --proxyusername $proxy_username --proxypassword $proxy_password"
+         Write-Output "Found proxy url $proxy_url and authentication info"
+     }
+   }
+
+   Write-Output $extra
+
+
 
    if ($interactive)
    {
