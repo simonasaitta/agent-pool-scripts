@@ -369,21 +369,15 @@ if (!(Test-Path -Path $agentExe))
    }
 }
 
-Write-Output $http_proxy
-   
-$http_proxy=[System.Environment]::GetEnvironmentVariable('http_proxy','machine')
-$https_proxy=[System.Environment]::GetEnvironmentVariable('https_proxy','machine')
-
-Write-Output $http_proxy
 $extra = ""
 $proxy_url_variable = ""
-if ($http_proxy)
+if ($env:http_proxy)
 {
-   $proxy_url_variable=$http_proxy
+   $proxy_url_variable=$env:http_proxy
 }
-elseif ($https_proxy)
+elseif ($env:https_proxy)
 {
-   $proxy_url_variable=$https_proxy      
+   $proxy_url_variable=$env:https_proxy      
 }
 
 if ($proxy_url_variable)
