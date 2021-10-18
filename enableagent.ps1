@@ -371,9 +371,9 @@ if (!(Test-Path -Path $agentExe))
 
 $extra = ""
 $proxy_url_variable = ""
-Write-Output "env value $env:http_proxy"
+Log-Message "env value $env:http_proxy"
 $http_proxy = [System.Environment]::GetEnvironmentVariable('http_proxy', 'machine')
-Write-Output "get env value $http_proxy"
+Log-Message "get env value $http_proxy"
 if ($env:http_proxy)
 {
    $proxy_url_variable=$env:http_proxy
@@ -385,7 +385,7 @@ elseif ($env:https_proxy)
 
 if ($proxy_url_variable)
 {
-   Write-Output "Found a proxy configuration"
+   Log-Message "Found a proxy configuration"
    $proxy_username = ""
    $proxy_password = ""
    $proxy_url = ""
@@ -394,7 +394,7 @@ if ($proxy_url_variable)
    {
       $proxy_url = $proxy_url_variable
       $extra = "--proxyurl $proxy_url_variable"
-      Write-Output "Found proxy url $proxy_url"
+      Log-Message "Found proxy url $proxy_url"
    }
    else
    {
@@ -405,11 +405,11 @@ if ($proxy_url_variable)
       $proxy_username = [System.Net.WebUtility]::UrlDecode($proxy_username)
       $proxy_password = [System.Net.WebUtility]::UrlDecode($proxy_password)
       $extra = "--proxyurl $proxy_url --proxyusername $proxy_username --proxypassword $proxy_password"
-      Write-Output "Found proxy url $proxy_url and authentication info"
+      Log-Message "Found proxy url $proxy_url and authentication info"
   }
 }
 
-Write-Output $extra
+Log-Message $extra
 
 if ($runAsUser)
 {
