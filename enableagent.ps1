@@ -369,6 +369,51 @@ if (!(Test-Path -Path $agentExe))
    }
 }
 
+Write-Output $http_proxy
+   
+$http_proxy=[System.Environment]::GetEnvironmentVariable('http_proxy','machine')
+$https_proxy=[System.Environment]::GetEnvironmentVariable('https_proxy','machine')
+
+Write-Output $http_proxy
+$extra = ""
+$proxy_url_variable = ""
+if ($http_proxy)
+{
+   $proxy_url_variable=$http_proxy
+}
+elseif ($https_proxy)
+{
+   $proxy_url_variable=$https_proxy      
+}
+
+if ($proxy_url_variable)
+{
+   Write-Output "Found a proxy configuration"
+   $proxy_username = ""
+   $proxy_password = ""
+   $proxy_url = ""
+
+   if ( $proxy_url_variable -NotMatch "@")
+   {
+      $proxy_url = $proxy_url_variable
+      $extra = "--proxyurl $proxy_url_variable"
+      Write-Output "Found proxy url $proxy_url"
+   }
+   else
+   {
+      $proxy_url = "$([regex]::match($proxy_url_variable, '.+\/\/').Groups[0].Value)$([regex]::match($proxy_url_variable, '@(.*)').Groups[1].Value)"
+      $proxy_username = [regex]::match($proxy_url_variable, ':\/\/([^:]+)\:').Groups[1].Value
+      $proxy_password = [regex]::match($proxy_url_variable, ':[^:]+:([^@]+)@').Groups[1].Value
+
+      $proxy_username = [System.Net.WebUtility]::UrlDecode($proxy_username)
+      $proxy_password = [System.Net.WebUtility]::UrlDecode($proxy_password)
+      $extra = "--proxyurl $proxy_url --proxyusername $proxy_username --proxypassword $proxy_password"
+      Write-Output "Found proxy url $proxy_url and authentication info"
+  }
+}
+
+Write-Output $extra
+
 if ($runAsUser)
 {
    # create administrator account if the image owner has not already done that for us
@@ -415,51 +460,6 @@ if ($runAsUser)
       Log-Message "Adding $username to docker-users"
       Add-LocalGroupMember -Group "docker-users" -Member $username
    }
-
-   $http_proxy=[System.Environment]::GetEnvironmentVariable('http_proxy','machine')
-   $https_proxy=[System.Environment]::GetEnvironmentVariable('https_proxy','machine')
-
-   Write-Output $http_proxy
-   $extra = ""
-   $proxy_url_variable = ""
-   if ($http_proxy)
-   {
-      $proxy_url_variable=$http_proxy
-   }
-   elseif ($https_proxy)
-   {
-      $proxy_url_variable=$https_proxy      
-   }
-
-   if ($proxy_url_variable)
-   {
-      Write-Output "Found a proxy configuration"
-      $proxy_username = ""
-      $proxy_password = ""
-      $proxy_url = ""
-
-      if ( $proxy_url_variable -NotMatch "@")
-      {
-         $proxy_url = $proxy_url_variable
-         $extra = "--proxyurl $proxy_url_variable"
-         Write-Output "Found proxy url $proxy_url"
-      }
-      else
-      {
-         $proxy_url = "$([regex]::match($proxy_url_variable, '.+\/\/').Groups[0].Value)$([regex]::match($proxy_url_variable, '@(.*)').Groups[1].Value)"
-         $proxy_username = [regex]::match($proxy_url_variable, ':\/\/([^:]+)\:').Groups[1].Value
-         $proxy_password = [regex]::match($proxy_url_variable, ':[^:]+:([^@]+)@').Groups[1].Value
-
-         $proxy_username = [System.Net.WebUtility]::UrlDecode($proxy_username)
-         $proxy_password = [System.Net.WebUtility]::UrlDecode($proxy_password)
-         $extra = "--proxyurl $proxy_url --proxyusername $proxy_username --proxypassword $proxy_password"
-         Write-Output "Found proxy url $proxy_url and authentication info"
-     }
-   }
-
-   Write-Output $extra
-
-
 
    if ($interactive)
    {
@@ -525,7 +525,7 @@ else
 {
    Log-Message "Configuring agent to run as a service as NetworkService"
 
-   $configParameters = " --unattended --url $url --pool ""$pool"" --auth pat --replace --runAsService --token $token $runArgs"
+   $configParameters = " --unattended --url $url --pool ""$pool"" --auth pat --replace --runAsService --token $token $runArgs $extra"
    try
    {
       Start-Process -FilePath $agentConfig -ArgumentList $configParameters -NoNewWindow -Wait -WorkingDirectory $agentDir
