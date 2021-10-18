@@ -371,6 +371,9 @@ if (!(Test-Path -Path $agentExe))
 
 $extra = ""
 $proxy_url_variable = ""
+Write-Output "env value $env:http_proxy"
+$http_proxy = [System.Environment]::GetEnvironmentVariable('http_proxy', 'machine')
+Write-Output "get env value $http_proxy"
 if ($env:http_proxy)
 {
    $proxy_url_variable=$env:http_proxy
