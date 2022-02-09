@@ -14,6 +14,8 @@ decode_string()
 
 echo "version 11"
 
+while [ ! -f /var/lib/cloud/instance/boot-finished.txt ]; do sleep 5; done
+
 # load environment variables if file is present
 if (test -f "/etc/profile.d/agent_env_vars.sh"); then
     source /etc/profile.d/agent_env_vars.sh
