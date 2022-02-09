@@ -79,7 +79,7 @@ rm $zipfile
 cd $dir
 
 # grant broad permissions in the agent folder
-sudo chmod -R 0775 $dir
+sudo chmod -R 777 $dir
 sudo chown -R AzDevOps:AzDevOps $dir
 
 # install dependencies
