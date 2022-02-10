@@ -14,7 +14,12 @@ decode_string()
 
 echo "version 11"
 
-while [ ! -f /var/lib/cloud/instance/boot-finished ]; do sleep 5; done
+# is command init present?
+if command -v cloud-init &> /dev/null
+then
+  # wait for it to complete or timeout after 1 hour
+  while [ !  "$(cloud-init status)" != "status: done" -a $(( SECONDS - wait_start_time )) -lt 3600 ]; do sleep 5; done
+fi
 
 # load environment variables if file is present
 if (test -f "/etc/profile.d/agent_env_vars.sh"); then
