@@ -18,7 +18,7 @@ echo "version 11"
 if command -v cloud-init &> /dev/null
 then
   # wait for it to complete or timeout after 1 hour
-  while [ !  "$(cloud-init status)" != "status: done" -a $(( SECONDS - wait_start_time )) -lt 3600 ]; do sleep 5; done
+  while [ !  "$(cloud-init status)" != *"status: done"* -a $(( SECONDS - wait_start_time )) -lt 3600 ]; do sleep 5; done
 fi
 
 # load environment variables if file is present
