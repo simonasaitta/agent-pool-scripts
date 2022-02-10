@@ -16,8 +16,8 @@ echo "version 11"
 
 # is command init present?
 if command -v cloud-init &> /dev/null
-wait_start_time=$SECONDS
 then
+    wait_start_time=$SECONDS
     log_message "waiting for cloud init to complete"
     # wait for it to complete or timeout after 1 hour
     while [ !  "$(cloud-init status)" != *"status: done"* -a $(( SECONDS - wait_start_time )) -lt 300 ]; do sleep 5; done
