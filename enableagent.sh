@@ -21,7 +21,7 @@ then
     log_message "waiting for cloud init to complete"
     # wait for it to complete or timeout after 1 hour
 
-    while ! cloud-init status | grep "done" && (( $(( SECONDS - wait_start_time )) < 1800 )); do
+    while ! cloud-init status | grep "done" >/dev/null && (( $(( SECONDS - wait_start_time )) < 1800 )); do
         sleep 5;
     done
     log_message "waiting complete - Time spent: $(( SECONDS - wait_start_time )) seconds"
