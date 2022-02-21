@@ -84,10 +84,6 @@ if (Test-Path -Path (Join-Path -Path $agentDir -ChildPath ".agent"))
 Set-NetIPv4Protocol -SourceRoutingBehavior drop
 
 # Begin MMS Initialization steps
-Log-Message "Disable Windows Defender..."
-Get-Process -Name 'MpCmdRun' -ErrorAction Ignore | Stop-Process -force -ErrorAction Ignore
-Get-ScheduledTask -TaskPath '\Microsoft\Windows\Windows Defender\' -ErrorAction Ignore | Disable-ScheduledTask -ErrorAction Ignore
-Stop-Service -Force -Name WinDefend -ErrorAction Ignore
 Set-MpPreference -DisableArchiveScanning $true -ErrorAction Ignore
 Set-MpPreference -DisableAutoExclusions  $true -ErrorAction Ignore
 Set-MpPreference -DisableBehaviorMonitoring $true -ErrorAction Ignore
