@@ -22,6 +22,8 @@ function Log-Message
    Write-Host $text
 }
 
+$username = "azuruser"
+
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 $agentDir = $PSScriptRoot
 
