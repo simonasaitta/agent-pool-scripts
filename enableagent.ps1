@@ -519,6 +519,7 @@ else
    Log-Message "Configuring agent to run as a service as NetworkService"
 
    $configParameters = " --unattended --url $url --pool ""$pool"" --auth pat --replace --runAsService --token $token $runArgs $extra"
+   Log-Message "$configParameters"
    try
    {
       Start-Process -FilePath $agentConfig -ArgumentList $configParameters -NoNewWindow -Wait -WorkingDirectory $agentDir
