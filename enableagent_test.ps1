@@ -11,15 +11,15 @@ function Log-Message
 {
    param ([string] $message)
 
-   $now = [DateTime]::UtcNow.ToString('u')
-   $text = $now + " " + $message
-   $logFile = "script.log"
-   if (!(Test-Path -Path $logFile))
-   {
-      Set-Content -Path $logFile -Value ""
-   }
-   Add-Content -Path $logFile -Value $text
-   Write-Host $text
+   # $now = [DateTime]::UtcNow.ToString('u')
+   # $text = $now + " " + $message
+   # $logFile = "script.log"
+   # if (!(Test-Path -Path $logFile))
+   # {
+   #    Set-Content -Path $logFile -Value ""
+   # }
+   # Add-Content -Path $logFile -Value $text
+   # Write-Host $text
 }
 
 $username = "azuruser"
