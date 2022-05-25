@@ -86,23 +86,6 @@ if (Test-Path -Path (Join-Path -Path $agentDir -ChildPath ".agent"))
 Set-NetIPv4Protocol -SourceRoutingBehavior drop
 
 # Begin MMS Initialization steps
-Set-MpPreference -DisableArchiveScanning $true -ErrorAction Ignore
-Set-MpPreference -DisableAutoExclusions  $true -ErrorAction Ignore
-Set-MpPreference -DisableBehaviorMonitoring $true -ErrorAction Ignore
-Set-MpPreference -DisableBlockAtFirstSeen $true -ErrorAction Ignore
-Set-MpPreference -DisableCatchupFullScan $true -ErrorAction Ignore
-Set-MpPreference -DisableCatchupQuickScan $true -ErrorAction Ignore
-Set-MpPreference -DisableIntrusionPreventionSystem $true -ErrorAction Ignore
-Set-MpPreference -DisableIOAVProtection $true -ErrorAction Ignore
-Set-MpPreference -DisablePrivacyMode $true -ErrorAction Ignore
-Set-MpPreference -DisableScanningNetworkFiles $true -ErrorAction Ignore
-Set-MpPreference -DisableScriptScanning $true -ErrorAction Ignore
-Set-MpPreference -EnableControlledFolderAccess Disable -ErrorAction Ignore
-Set-MpPreference -EnableNetworkProtection Disabled -ErrorAction Ignore
-Set-MpPreference -MAPSReporting 0 -ErrorAction Ignore
-Set-MpPreference -PUAProtection 0 -ErrorAction Ignore
-Set-MpPreference -SignatureDisableUpdateOnStartupWithoutEngine $true -ErrorAction Ignore
-Set-MpPreference -SubmitSamplesConsent 2 -ErrorAction Ignore
 Add-MpPreference -ExclusionPath 'c:\', 'd:\' -ErrorAction Ignore
 
 Log-Message "Disable VisualStudio/VSIXAutoUpdater Tasks..."
